@@ -1,57 +1,61 @@
-# Sample Hardhat 3 Beta Project (`node:test` and `viem`)
 
-This project showcases a Hardhat 3 Beta project using the native Node.js test runner (`node:test`) and the `viem` library for Ethereum interactions.
-
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+# Rock Paper Scissor Game on Base Sepolia
 
 ## Project Overview
+A decentralized Rock Paper Scissor game built on the Base Sepolia testnet using Solidity and Hardhat. This project demonstrates smart contract development, deployment, and interaction on an EVM-compatible blockchain.
 
-This example project includes:
+## Features
+- Create new game instances.
+- Join existing games as a second player.
+- Players can choose their moves (Rock, Paper, or Scissor) using a commit-reveal scheme to ensure fairness.
+- The winner of the game receives an NFT as a reward.
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using [`node:test`](nodejs.org/api/test.html), the new Node.js native test runner, and [`viem`](https://viem.sh/).
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+## Technologies Used
+- **Solidity:** Smart contract language.
+- **Hardhat:** Ethereum development environment for compiling, deploying, testing, and debugging smart contracts.
+- **Base Sepolia:** The testnet used for deployment.
+- **Bun:** JavaScript runtime and package manager.
 
-## Usage
+## Setup and Installation
 
-### Running Tests
+1.  **Clone the repository:**
+    ```bash
+    git clone git@github.com:ardefishel/web3-base-RPS-game.git
+    cd rps-game-contract
+    ```
+2.  **Install dependencies:**
+    ```bash
+    bun install
+    ```
 
-To run all the tests in the project, execute the following command:
+## Key Commands
 
-```shell
-npx hardhat test
+### Compile Contracts
+```bash
+bunx hardhat build
 ```
 
-You can also selectively run the Solidity or `node:test` tests:
-
-```shell
-npx hardhat test solidity
-npx hardhat test nodejs
+### Run Tests
+```bash
+bunx hardhat test
 ```
 
-### Make a deployment to Sepolia
-
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
-
-To run the deployment to a local chain:
-
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
+### Deploy Contract (using Hardhat Ignition)
+To deploy the contract to Base Sepolia, ensure you have configured your `hardhat.config.ts` with the appropriate network details and a private key.
+```bash
+bunx hardhat ignition deploy ignition/modules/RPSGame.module.ts --network baseSepolia
 ```
 
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
+### Play the Game
+After deployment, you can interact with the game using the provided script.
+```bash
+bunx hardhat run scripts/playRPS.ts --network baseSepolia
 ```
+_Note: You might need to update the `playRPS.ts` script with the deployed contract address._
 
-After setting the variable, you can run the deployment with the Sepolia network:
-
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
+### Verify Contract
+After deployment, you can verify your contract on Etherscan (or BaseScan for Base Sepolia) using:
+```bash
+npx hardhat verify --network baseSepolia <deployed_contract_address>
 ```
+_Replace `<deployed_contract_address>` with the actual address of your deployed RPSGame contract._

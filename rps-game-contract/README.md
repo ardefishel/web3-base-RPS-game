@@ -56,6 +56,6 @@ _Note: You might need to update the `playRPS.ts` script with the deployed contra
 ### Verify Contract
 After deployment, you can verify your contract on Etherscan (or BaseScan for Base Sepolia) using:
 ```bash
-npx hardhat verify --network baseSepolia <deployed_contract_address>
+bunx hardhat verify --network baseSepolia <deployed_contract_address>
 ```
 _Replace `<deployed_contract_address>` with the actual address of your deployed RPSGame contract._

@@ -1,11 +1,14 @@
 import BattleGround from "@/components/BattleGround";
 import type { Lobby } from "@/components/LobbyCard";
 import { Button } from "@/components/ui/button";
-import { RPS_ABI, RPS_ADDRESS } from "@/lib/abi/rpsgame.abi";
+import { contractCall } from "@/lib/abi/rpsgame.abi";
 import { formatAddress } from "@/lib/utils";
-import { Transaction, TransactionButton } from "@coinbase/onchainkit/transaction";
+import {
+  Transaction,
+  TransactionButton,
+} from "@coinbase/onchainkit/transaction";
 import { createFileRoute } from "@tanstack/react-router";
-import { ContractFunctionParameters, createPublicClient, http } from "viem";
+import { createPublicClient, http } from "viem";
 import { baseSepolia } from "viem/chains";
 import { useAccount, useChainId } from "wagmi";
 
@@ -17,12 +20,9 @@ export const Route = createFileRoute("/battle/$id")({
       transport: http(),
     });
 
-    const gameData = (await publicClient.readContract({
-      address: RPS_ADDRESS,
-      abi: RPS_ABI,
-      functionName: "getGame",
-      args: [BigInt(params.id)],
-    })) as unknown as Lobby;
+    const gameData = (await publicClient.readContract(
+      contractCall("getGame", [BigInt(params.id)])
+    )) as unknown as Lobby;
 
     return {
       ...gameData,
@@ -35,16 +35,9 @@ function RouteComponent() {
   const gameData = Route.useLoaderData();
   const { address } = useAccount();
 
-  const chainId = useChainId()
+  const chainId = useChainId();
 
-  const joinGameCall = [
-    {
-      address: RPS_ADDRESS,
-      abi: RPS_ABI,
-      functionName: "joinGame",
-      args: [BigInt(gameData.id)],
-    } as unknown as ContractFunctionParameters,
-  ];
+  const joinGameCall = [contractCall("joinGame", [BigInt(gameData.id)])];
 
   return (
     <main className="mx-auto w-full max-w-screen-sm p-4 space-y-4">
@@ -56,12 +49,12 @@ function RouteComponent() {
           <div>
             {/* <Button>Join</Button> */}
             <div>
-            <Transaction calls={joinGameCall} chainId={chainId}>
-              <Button asChild variant={"default"} size={"sm"}>
-                <TransactionButton text="Join Game" />
-              </Button>
-            </Transaction>
-          </div>
+              <Transaction calls={joinGameCall} chainId={chainId}>
+                <Button asChild variant={"default"} size={"sm"}>
+                  <TransactionButton text="Join Game" />
+                </Button>
+              </Transaction>
+            </div>
           </div>
         )}
       </header>

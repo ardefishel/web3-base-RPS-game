@@ -1,3 +1,5 @@
+import { ContractFunctionArgs, ContractFunctionParameters } from "viem";
+
 export const RPS_ADDRESS = "0xa91d131430a9fEd44A211FA3DEcA510e6a18BC58";
 export const RPS_ABI = [
   {
@@ -851,5 +853,14 @@ export const RPS_ABI = [
     stateMutability: "nonpayable",
     type: "function",
   },
-];
+] as const;
 
+export function contractCall(functionName: string, args?: ContractFunctionArgs): ContractFunctionParameters {
+  return {
+      abi: RPS_ABI,
+      address: RPS_ADDRESS,
+      functionName,
+      args
+    }
+  
+}

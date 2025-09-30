@@ -5,14 +5,13 @@ import { Separator } from "@/components/ui/separator";
 import type { Lobby } from "./LobbyCard";
 import { LobbyGrid } from "./LobbyGrid";
 import { Button } from "./ui/button";
-import { RPS_ABI, RPS_ADDRESS } from "../lib/abi/rpsgame.abi";
+import { contractCall, RPS_ABI, RPS_ADDRESS } from "../lib/abi/rpsgame.abi";
 
 import {
   Transaction,
   TransactionButton,
 } from "@coinbase/onchainkit/transaction";
 import { useChainId, useReadContract, useReadContracts } from "wagmi";
-import { ContractFunctionParameters } from "viem";
 import { useMemo } from "react";
 
 function Section({
@@ -79,20 +78,7 @@ export default function InGame() {
   const chainId = useChainId();
   const lobbies = useAllLobby();
 
-  console.log({lobbies})
-
-  //inprogress
-  //awaiting
-  //public
-
-  const createGameCall = [
-    {
-      address: RPS_ADDRESS,
-      abi: RPS_ABI,
-      functionName: "createGame",
-      args: [],
-    } as unknown as ContractFunctionParameters,
-  ];
+  const createGameCall = [contractCall("createGame")]
 
   return (
     <main className="mx-auto w-full max-w-screen-sm p-4 space-y-4">
@@ -176,13 +162,7 @@ const useAllLobby = (): Lobby[] => {
   const allGameCalls = useMemo(() => {
     const total = Number(gameCounter ?? 0n);
     if (total <= 0) return [];
-
-    return Array.from({ length: total }, (_, i) => ({
-      address: RPS_ADDRESS,
-      abi: RPS_ABI,
-      functionName: "getGame",
-      args: [BigInt(i + 1)],
-    })) as unknown as ContractFunctionParameters[];
+    return Array.from({length: total}, (_,i) => contractCall('getGame', [BigInt(i+1)]))
   }, [gameCounter]);
 
   const { data } = useReadContracts({

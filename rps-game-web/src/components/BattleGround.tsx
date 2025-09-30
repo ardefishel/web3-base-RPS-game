@@ -9,16 +9,13 @@ import {
   CardFooter,
 } from "./ui/card";
 import { formatAddress } from "@/lib/utils";
-import { RPS_ABI, RPS_ADDRESS } from "@/lib/abi/rpsgame.abi";
-import { ContractFunctionParameters } from "viem";
+import { contractCall } from "@/lib/abi/rpsgame.abi";
 import {
   Transaction,
   TransactionButton,
 } from "@coinbase/onchainkit/transaction";
 
-import {Check} from 'lucide-react'
-
-type Choice = "rock" | "paper" | "scissors";
+import { Check } from "lucide-react";
 
 type Props = {
   gameData: Lobby;
@@ -29,34 +26,16 @@ const BattleGround = ({ gameData }: Props) => {
 
   const chainId = useChainId();
 
-  const isReveal = gameData.move1 !== 0 && gameData.move2 !== 0
-
-  console.log({gameData})
-
+  const isReveal = gameData.move1 !== 0 && gameData.move2 !== 0;
 
   const rockMoveCall = [
-    {
-      address: RPS_ADDRESS,
-      abi: RPS_ABI,
-      functionName: "submitMove",
-      args: [BigInt(gameData.id), BigInt(1)],
-    } as unknown as ContractFunctionParameters,
+    contractCall("submitMove", [BigInt(gameData.id), BigInt(1)]),
   ];
   const paperMoveCall = [
-    {
-      address: RPS_ADDRESS,
-      abi: RPS_ABI,
-      functionName: "submitMove",
-      args: [BigInt(gameData.id), BigInt(2)],
-    } as unknown as ContractFunctionParameters,
+    contractCall("submitMove", [BigInt(gameData.id), BigInt(2)]),
   ];
   const scissorMoveCall = [
-    {
-      address: RPS_ADDRESS,
-      abi: RPS_ABI,
-      functionName: "submitMove",
-      args: [BigInt(gameData.id), BigInt(3)],
-    } as unknown as ContractFunctionParameters,
+    contractCall("submitMove", [BigInt(gameData.id), BigInt(3)]),
   ];
 
   const rps_map = (num: number) => {
@@ -70,7 +49,7 @@ const BattleGround = ({ gameData }: Props) => {
       default:
         return null;
     }
-  }
+  };
 
   return (
     <Card className="bg-card">
@@ -132,9 +111,6 @@ const BattleGround = ({ gameData }: Props) => {
               <TransactionButton text="Scissor" />
             </Button>
           </Transaction>
-          {/* <MoveButton label="Rock" value="rock" onPick={() => {}} />
-          <MoveButton label="Paper" value="paper" onPick={() => {}} />
-          <MoveButton label="Scissors" value="scissors" onPick={() => {}} /> */}
         </div>
       </CardFooter>
     </Card>
@@ -143,32 +119,10 @@ const BattleGround = ({ gameData }: Props) => {
 
 export default BattleGround;
 
-function MoveButton({
-  label,
-  value,
-  onPick,
-  
-}: {
-  label: string;
-  value: Choice;
-  onPick: (c: Choice) => void;
-  
-}) {
-  return (
-    <Button
-      className="w-full"
-      onClick={() => onPick(value)}
-      aria-label={`Choose ${label}`}
-    >
-      {label}
-    </Button>
-  );
-}
-
 function CircleChoice({
   label,
   choice,
-  isReveal
+  isReveal,
 }: {
   label: string;
   choice: "rock" | "paper" | "scissors" | null;
@@ -187,14 +141,13 @@ function CircleChoice({
       ? `${label} has not chosen yet`
       : `${label} chose ${choice}`;
 
-
   return (
     <div className="flex flex-col items-center">
       <div
         className="flex h-24 w-24 items-center justify-center rounded-full border bg-muted/30 text-2xl font-semibold"
         aria-label={desc}
       >
-        {isReveal || symbol == '?' ? symbol : <Check/>}
+        {isReveal || symbol == "?" ? symbol : <Check />}
       </div>
       <div className="mt-2 text-sm text-muted-foreground">{label}</div>
     </div>

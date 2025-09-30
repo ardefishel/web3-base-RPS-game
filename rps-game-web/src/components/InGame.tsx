@@ -13,6 +13,7 @@ import {
 } from "@coinbase/onchainkit/transaction";
 import { useChainId, useReadContract, useReadContracts } from "wagmi";
 import { useMemo } from "react";
+import { useLobbies } from "@/lib/hooks/useLobbies";
 
 function Section({
   title,
@@ -76,7 +77,8 @@ function Section({
 
 export default function InGame() {
   const chainId = useChainId();
-  const lobbies = useAllLobby();
+
+  const {lobbies, refetchLobbies} = useLobbies()
 
   const createGameCall = [contractCall("createGame")]
 
@@ -99,7 +101,7 @@ export default function InGame() {
             <TabsTrigger value="completed">Completed</TabsTrigger>
           </TabsList>
           <div>
-            <Transaction calls={createGameCall} chainId={chainId}>
+            <Transaction onSuccess={() => refetchLobbies()} calls={createGameCall} chainId={chainId}>
               <Button asChild variant={"default"} size={"sm"}>
                 <TransactionButton text="Add Game" />
               </Button>
@@ -151,56 +153,3 @@ export default function InGame() {
     </main>
   );
 }
-
-const useAllLobby = (): Lobby[] => {
-  const { data: gameCounter } = useReadContract({
-    address: RPS_ADDRESS,
-    abi: RPS_ABI,
-    functionName: "gameCounter",
-  });
-
-  const allGameCalls = useMemo(() => {
-    const total = Number(gameCounter ?? 0n);
-    if (total <= 0) return [];
-    return Array.from({length: total}, (_,i) => contractCall('getGame', [BigInt(i+1)]))
-  }, [gameCounter]);
-
-  const { data } = useReadContracts({
-    contracts: allGameCalls,
-  });
-
-  if (!data) return [];
-
-  return data
-    .map((item, index) => {
-      if (item.status !== "success" || !item.result) return null;
-
-      const result = item.result as unknown as {
-        player1: `0x${string}`;
-        player2: `0x${string}`;
-        move1: number;
-        move2: number;
-        status: number; // 0 Waiting, 1 Ongoing, 2 Finished
-        winner: `0x${string}`;
-      };
-
-      const toLobbyStatus = (s: number): Lobby["status"] => {
-        if (s === 0) return "awaiting_player";
-        if (s === 1) return "in_progress";
-        return "win"; // finished; winner presence not used here
-      };
-
-      const lobby: Lobby = {
-        id: String(index + 1),
-        status: toLobbyStatus(result.status),
-        player1: result.player1,
-        player2: result.player2,
-        move1: Number(result.move1 ?? 0),
-        move2: Number(result.move2 ?? 0),
-        winner: result.winner,
-      };
-
-      return lobby;
-    })
-    .filter((x): x is Lobby => x !== null);
-};

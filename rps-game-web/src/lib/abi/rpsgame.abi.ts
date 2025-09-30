@@ -1,3 +1,4 @@
+export const RPS_ADDRESS = "0xa91d131430a9fEd44A211FA3DEcA510e6a18BC58";
 export const RPS_ABI = [
   {
     inputs: [],
@@ -851,3 +852,4 @@ export const RPS_ABI = [
     type: "function",
   },
 ];
+

@@ -20,6 +20,7 @@ export function Providers(props: { children: ReactNode }) {
           config={{
             appearance: {
               mode: "auto",
+              theme: "hacker"
             },
           }}
         >

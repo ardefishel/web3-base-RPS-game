@@ -12,7 +12,11 @@ export type LobbyStatus = ActiveStatus | CompletedStatus
 export type Lobby = {
   id: string
   status: LobbyStatus
-  host: string
+  player1: string;
+  player2: string;
+  move1:   number;
+  move2:   number;
+  winner:  string;
 }
 
 function statusToLabel(status: LobbyStatus) {
@@ -54,7 +58,7 @@ export function LobbyCard({ lobby, className }: { lobby: Lobby; className?: stri
     <Link to="/battle/$id" params={{id: lobby.id}}>
       <Card
         role="article"
-        aria-label={`Lobby ${lobby.id} by ${lobby.host}, status ${statusToLabel(lobby.status)}`}
+        aria-label={`Lobby ${lobby.id} by ${lobby.player1}, status ${statusToLabel(lobby.status)}`}
         className={cn(
           "bg-card text-card-foreground rounded-md p-2 hover:ring-1 hover:ring-ring focus-within:ring-1 focus-within:ring-ring transition",
           "min-h-20", // compact height
@@ -72,8 +76,8 @@ export function LobbyCard({ lobby, className }: { lobby: Lobby; className?: stri
               {statusToLabel(lobby.status)}
             </Badge>
           </div>
-          <div className="text-xs truncate" title={`Host: ${lobby.host}`}>
-            Host: <span className="font-medium">{lobby.host}</span>
+          <div className="text-xs truncate" title={`Host: ${lobby.player1}`}>
+            Host: <span className="font-medium">{lobby.player1}</span>
           </div>
         </div>
       </Card>

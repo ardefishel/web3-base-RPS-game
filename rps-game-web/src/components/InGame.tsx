@@ -6,6 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import type { Lobby } from "./LobbyCard"
 import { LobbyGrid } from "./LobbyGrid"
+import { Button } from "./ui/button"
+
+import {PlusCircle} from 'lucide-react'
 
 function Section({
   title,
@@ -73,10 +76,13 @@ export default function InGame() {
       </header>
 
       <Tabs defaultValue="active" className="w-full">
-        <TabsList aria-label="Lobby tabs" className="grid w-full grid-cols-2">
+        <div className="w-full flex justify-between items-center gap-2">
+        <TabsList aria-label="Lobby tabs" className="grid w-full flex-1 grid-cols-2">
           <TabsTrigger value="active">Active</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>
         </TabsList>
+        <Button variant={"default"} size={"sm"}><PlusCircle/> New Game</Button>
+        </div>
 
         <TabsContent value="active" className="space-y-4">
           <Section title="In Progress Battle" description="Ongoing matches you can spectate or track.">

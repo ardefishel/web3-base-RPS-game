@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { Link } from "@tanstack/react-router"
 
 type ActiveStatus = "in_progress" | "awaiting_player" | "available"
 type CompletedStatus = "win" | "lost"
@@ -50,30 +51,32 @@ function statusToBadgeVariant(status: LobbyStatus): "default" | "secondary" | "d
 
 export function LobbyCard({ lobby, className }: { lobby: Lobby; className?: string }) {
   return (
-    <Card
-      role="article"
-      aria-label={`Lobby ${lobby.id} by ${lobby.host}, status ${statusToLabel(lobby.status)}`}
-      className={cn(
-        "bg-card text-card-foreground rounded-md p-2 hover:ring-1 hover:ring-ring focus-within:ring-1 focus-within:ring-ring transition",
-        "min-h-20", // compact height
-        className,
-      )}
-    >
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-mono text-muted-foreground">#{lobby.id}</span>
-          <Badge
-            aria-label={`Status: ${statusToLabel(lobby.status)}`}
-            variant={statusToBadgeVariant(lobby.status)}
-            className="px-1.5 py-0 text-[10px]"
-          >
-            {statusToLabel(lobby.status)}
-          </Badge>
+    <Link to="/battle/$id" params={{id: lobby.id}}>
+      <Card
+        role="article"
+        aria-label={`Lobby ${lobby.id} by ${lobby.host}, status ${statusToLabel(lobby.status)}`}
+        className={cn(
+          "bg-card text-card-foreground rounded-md p-2 hover:ring-1 hover:ring-ring focus-within:ring-1 focus-within:ring-ring transition",
+          "min-h-20", // compact height
+          className,
+        )}
+      >
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono text-muted-foreground">#{lobby.id}</span>
+            <Badge
+              aria-label={`Status: ${statusToLabel(lobby.status)}`}
+              variant={statusToBadgeVariant(lobby.status)}
+              className="px-1.5 py-0 text-[10px]"
+            >
+              {statusToLabel(lobby.status)}
+            </Badge>
+          </div>
+          <div className="text-xs truncate" title={`Host: ${lobby.host}`}>
+            Host: <span className="font-medium">{lobby.host}</span>
+          </div>
         </div>
-        <div className="text-xs truncate" title={`Host: ${lobby.host}`}>
-          Host: <span className="font-medium">{lobby.host}</span>
-        </div>
-      </div>
-    </Card>
+      </Card>
+    </Link>
   )
 }

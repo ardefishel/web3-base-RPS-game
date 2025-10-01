@@ -6,8 +6,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 
-export const formatAddress = (addr: string) => {
+export const formatAddress = (addr: string, start: number = 6, end: number = 4) => {
   return addr === "0x0000000000000000000000000000000000000000"
     ? "Empty"
-    : `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+    : `${addr.slice(0, start)}...${addr.slice(-end)}`;
 };

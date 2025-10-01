@@ -1,5 +1,4 @@
 import InGame from "@/components/InGame";
-import { LobbyGrid } from "@/components/LobbyGrid";
 import { Wallet } from "@coinbase/onchainkit/wallet";
 import { createFileRoute } from "@tanstack/react-router";
 import { useAccount } from "wagmi";

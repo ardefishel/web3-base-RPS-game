@@ -16,7 +16,7 @@ type GameResult = {
 const toLobbyStatus = (s: number): Lobby["status"] => {
     if (s === 0) return "awaiting_player"
     if (s === 1) return "in_progress"
-    return "win"
+    return "completed"
 }
 
 export function useLobbies() {

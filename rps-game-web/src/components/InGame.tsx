@@ -1,36 +1,41 @@
 import type React from "react";
+import { useMemo, useCallback } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import type { Lobby } from "./LobbyCard";
 import { LobbyGrid } from "./LobbyGrid";
 import { Button } from "./ui/button";
-import { contractCall, RPS_ABI, RPS_ADDRESS } from "../lib/abi/rpsgame.abi";
+import { contractCall } from "../lib/abi/rpsgame.abi";
 
 import {
   Transaction,
   TransactionButton,
 } from "@coinbase/onchainkit/transaction";
-import { useChainId, useReadContract, useReadContracts } from "wagmi";
-import { useMemo } from "react";
+import { useAccount, useChainId } from "wagmi";
 import { useLobbies } from "@/lib/hooks/useLobbies";
+import type { Lobby } from "./LobbyCard";
 
-function Section({
-  title,
-  description,
-  children,
-}: {
+// Types for better type safety
+type LobbySection = "my_in_progress" | "my_awaiting" | "public_available" | "completed" | "public_not_available"
+
+interface LobbyWithSection extends Lobby {
+  section: LobbySection;
+}
+
+interface SectionProps {
   title: string;
   description?: string;
   children: React.ReactNode;
-}) {
+}
+
+function Section({ title, description, children }: SectionProps) {
   return (
     <section className="space-y-2">
       <header className="space-y-1">
         <h3 className="text-sm font-medium text-pretty">{title}</h3>
-        {description ? (
+        {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
-        ) : null}
+        )}
       </header>
       {children}
       <Separator />
@@ -38,49 +43,62 @@ function Section({
   );
 }
 
-// dummy data
-// const inProgress: Lobby[] = [
-//   { id: "1024", status: "in_progress", host: "Aiden" },
-//   { id: "1025", status: "in_progress", host: "Riley" },
-//   { id: "1026", status: "in_progress", host: "Nova" },
-//   { id: "1027", status: "in_progress", host: "Kai" },
-//   { id: "1028", status: "in_progress", host: "Maya" },
-//   { id: "1029", status: "in_progress", host: "Leo" },
-// ];
-
-// const awaiting: Lobby[] = [
-//   { id: "2001", status: "awaiting_player", host: "Zoe" },
-//   { id: "2002", status: "awaiting_player", host: "Luca" },
-//   { id: "2003", status: "awaiting_player", host: "Ivy" },
-//   { id: "2004", status: "awaiting_player", host: "Owen" },
-//   { id: "2005", status: "awaiting_player", host: "Mila" },
-//   { id: "2006", status: "awaiting_player", host: "Eli" },
-// ];
-
-// const publicGround: Lobby[] = [
-//   { id: "3001", status: "available", host: "Sage" },
-//   { id: "3002", status: "available", host: "Noah" },
-//   { id: "3003", status: "available", host: "Layla" },
-//   { id: "3004", status: "available", host: "Aria" },
-//   { id: "3005", status: "available", host: "Theo" },
-//   { id: "3006", status: "available", host: "Jude" },
-// ];
-
-// const completed: Lobby[] = [
-//   { id: "5001", status: "win", host: "Aiden" },
-//   { id: "5002", status: "lost", host: "Riley" },
-//   { id: "5003", status: "win", host: "Nova" },
-//   { id: "5004", status: "lost", host: "Kai" },
-//   { id: "5005", status: "win", host: "Maya" },
-//   { id: "5006", status: "lost", host: "Leo" },
-// ];
+function categorizeLobby(lobby: Lobby, userAddress?: `0x${string}`): LobbySection {
+  const EMPTY_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
+  const NO_MOVE = 0;
+  
+  const isUserInGame = lobby.player1 === userAddress || lobby.player2 === userAddress;
+  
+  if (isUserInGame) {
+    if (lobby.move1 !== NO_MOVE && lobby.move2 !== NO_MOVE) {
+      return "completed";
+    } else if (
+      lobby.player1 !== EMPTY_ADDRESS &&
+      lobby.player2 !== EMPTY_ADDRESS
+    ) {
+      return "my_in_progress";
+    } else {
+      return "my_awaiting";
+    }
+  } else {
+    return lobby.player2 === EMPTY_ADDRESS ? "public_available" : "public_not_available";
+  }
+}
 
 export default function InGame() {
   const chainId = useChainId();
+  const { address } = useAccount();
+  const { lobbies, loading, refetchLobbies } = useLobbies();
 
-  const {lobbies, refetchLobbies} = useLobbies()
+  const createGameCall = useMemo(() => [contractCall("createGame")], []);
 
-  const createGameCall = [contractCall("createGame")]
+  const categorizedLobbies = useMemo((): LobbyWithSection[] => {
+    return lobbies.map((lobby) => ({
+      ...lobby,
+      section: categorizeLobby(lobby, address),
+    }));
+  }, [lobbies, address]);
+
+  const lobbyCategories = useMemo(() => {
+    return {
+      myInProgress: categorizedLobbies.filter(({ section }) => section === "my_in_progress"),
+      myAwaiting: categorizedLobbies.filter(({ section }) => section === "my_awaiting"),
+      publicAvailable: categorizedLobbies.filter(({ section }) => section === "public_available"),
+      completed: categorizedLobbies.filter(({ section }) => section === "completed"),
+    };
+  }, [categorizedLobbies]);
+
+
+  if (loading) {
+    return (
+      <main className="mx-auto w-full max-w-screen-sm p-4 space-y-4">
+        <header className="space-y-1">
+          <h1 className="text-lg font-semibold text-balance">Lobbies</h1>
+          <p className="text-sm text-muted-foreground">Loading lobbies...</p>
+        </header>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto w-full max-w-screen-sm p-4 space-y-4">
@@ -100,9 +118,13 @@ export default function InGame() {
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
           </TabsList>
-          <div>
-            <Transaction onSuccess={() => refetchLobbies()} calls={createGameCall} chainId={chainId}>
-              <Button asChild variant={"default"} size={"sm"}>
+          <div className="flex gap-2">
+            <Transaction
+              onSuccess={refetchLobbies}
+              calls={createGameCall}
+              chainId={chainId}
+            >
+              <Button asChild variant="default" size="sm">
                 <TransactionButton text="Add Game" />
               </Button>
             </Transaction>
@@ -110,44 +132,47 @@ export default function InGame() {
         </div>
 
         <TabsContent value="active" className="space-y-4">
-          {/* <Section
-            title="In Progress Battle"
-            description="Ongoing matches you can spectate or track."
+          <Section 
+            title="In Progress" 
+            description="Your ongoing battles"
           >
             <LobbyGrid
-              lobbies={inProgress}
-              emptyLabel="No battles in progress"
+              lobbies={lobbyCategories.myInProgress}
+              emptyLabel="No games in progress"
             />
           </Section>
-
+          
           <Section
             title="Awaiting Player"
-            description="Join a match that needs one more player."
+            description="Your games waiting for opponents"
           >
             <LobbyGrid
-              lobbies={awaiting}
-              emptyLabel="No lobbies awaiting players"
+              lobbies={lobbyCategories.myAwaiting}
+              emptyLabel="No games awaiting players"
             />
           </Section>
-*/}
+          
           <Section
-            title="Public Ground"
-            description="Open lobbies available for anyone."
+            title="Public Lobbies"
+            description="Open games available to join"
           >
             <LobbyGrid
-              lobbies={lobbies}
+              lobbies={lobbyCategories.publicAvailable}
               emptyLabel="No public lobbies available"
             />
-          </Section> 
+          </Section>
         </TabsContent>
 
         <TabsContent value="completed" className="space-y-4">
-          {/* <Section
+          <Section
             title="Recently Completed"
-            description="Your wins and losses from completed lobbies."
+            description="Your wins and losses from finished games"
           >
-            <LobbyGrid lobbies={completed} emptyLabel="No completed lobbies" />
-          </Section> */}
+            <LobbyGrid
+              lobbies={lobbyCategories.completed}
+              emptyLabel="No completed games"
+            />
+          </Section>
         </TabsContent>
       </Tabs>
     </main>

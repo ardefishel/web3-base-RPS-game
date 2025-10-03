@@ -14,6 +14,23 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        // Suppress warnings about comments that Rollup cannot interpret
+        if (warning.code === 'INVALID_ANNOTATION') {
+          return;
+        }
+        warn(warning);
+      }
+    },
+    // Increase memory and chunk size limits
+    chunkSizeWarningLimit: 1500
+  },
+  define: {
+    // Ensure proper environment variable handling
+    global: 'globalThis',
+  }
 })
 
 export default config

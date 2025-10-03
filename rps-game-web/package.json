@@ -5,9 +5,13 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "start": "node .output/server/index.mjs",
-    "build": "vite build",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' vite build",
+    "build:production": "NODE_ENV=production NODE_OPTIONS='--max-old-space-size=4096' vite build",
     "serve": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "clean": "rm -rf dist .output node_modules/.vite",
+    "postinstall": "bun run clean-cache",
+    "clean-cache": "rm -rf node_modules/.cache"
   },
   "dependencies": {
     "@coinbase/onchainkit": "^1.1.0",
